@@ -1,0 +1,37 @@
+-- record demo 
+set serveroutput on
+declare
+type edu_rec is record ( college_name varchar2(50),
+                         year_of_passing PLS_INTEGER,
+                         degree_name varchar2(50));
+type emp_rec is record ( employee employees%rowtype,
+                         education edu_rec);                    
+r_emp_rec emp_rec;
+
+begin
+select * into r_emp_rec.employee from employees where employee_id = 101;
+r_emp_rec.education.college_name := 'Bengal Institute of Technology';
+r_emp_rec.education.year_of_passing := '2006';
+r_emp_rec.education.degree_name := 'B.Tech';
+
+DBMS_OUTPUT.PUT_LINE('Employee Name ' || r_emp_rec.employee.first_name || ' ' || r_emp_rec.employee.last_name);
+DBMS_OUTPUT.PUT_LINE('Degree ' || r_emp_rec.education.degree_name || ' ' || r_emp_rec.education.year_of_passing);
+end;
+
+-- updating records
+
+set serveroutput on
+declare
+emp_rec employees%rowtype;
+BEGIN
+select * into emp_rec from employees where employee_id = 101;
+
+insert into RETIRED_EMPLOYEES values emp_rec;
+DBMS_OUTPUT.PUT_LINE('Employee Salary ' || emp_rec.salary );
+emp_rec.salary := 0; 
+emp_rec.COMMISSION_PCT := 0;
+update RETIRED_EMPLOYEES set row = emp_rec where employee_id = 101;
+DBMS_OUTPUT.PUT_LINE('Employee Salary ' || emp_rec.salary );
+END;
+
+-- 
