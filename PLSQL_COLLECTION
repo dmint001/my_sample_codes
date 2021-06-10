@@ -110,9 +110,9 @@ ASSOCIATIVE ARRAYS / INDEX BY TABLES
 
 set serveroutput on;
 declare 
-    type emp_type is table of employees.first_name%type index by varchar2(50);
+    type emp_type is table of employees.first_name%type index by employees.email%type;
     emp_list emp_type;
-    idx employees.email%type; 
+    idx employees.email%type;
     v_email employees.email%type;
     v_first_name employees.first_name%type;
 begin
@@ -124,11 +124,91 @@ begin
     idx:= emp_list.first;
     
     while idx is not null loop
-    dbms_output.put_line(emp_list(idx));
+    dbms_output.put_line('The Email of ' || emp_list(idx) || ' is ' || idx);
     idx := emp_list.next(idx);
     end loop;
     
 end;
+
+---- Changing to fetch entire record --------
+
+set serveroutput on;
+declare 
+    type emp_type is table of employees%rowtype index by employees.email%type;
+    emp_list emp_type;
+    idx employees.email%type;
+begin
+    for x in 100..110 loop
+    select * into emp_list(x) from employees where employee_id = x;
+    end loop;
+    
+    idx:= emp_list.first;
+    
+    while idx is not null loop
+    dbms_output.put_line('The Email of ' || emp_list(idx).first_name || ' ' || emp_list(idx).last_name || ' is ' || emp_list(idx).email);
+    idx := emp_list.next(idx);
+    end loop;
+    
+end;
+
+----------------- using Custom Type field to avoid space wastage ----------------------
+
+set serveroutput on;
+declare 
+    type emp_record_type is record ( first_name employees.first_name%type,
+                                     last_name employees.last_name%type,
+                                     email employees.email%type);
+                                     
+    type emp_type is table of emp_record_type index by employees.email%type;
+    emp_list emp_type;
+    idx employees.email%type;
+begin
+    for x in 100..110 loop
+----------- In this below select query dont put * ------------
+    select first_name,last_name,email into emp_list(x) from employees where employee_id = x;
+    end loop;
+    
+    idx:= emp_list.first;
+    
+    while idx is not null loop
+    dbms_output.put_line('The Email of ' || emp_list(idx).first_name || ' ' || emp_list(idx).last_name || ' is ' || emp_list(idx).email);
+    idx := emp_list.next(idx);
+    end loop;
+    
+end;
+
+TO MOVE BACKWARDS IN ASSOCIATIVE ARRAY :- 
+ idx:= emp_list.last;
+ within loop :- 
+ idx := emp_list.prior(idx);
+ 
+ TO DELETE IN ASSOCIATIVE ARRAY :- 
+ emp_list.delete(100); where 100 is employee_id;
+ emp_list.delete(100,104); its a range - like here 100 to 104 will get deleted.
+ 
+ -----------------------------------------------------
+ SET SERVEROUTPUT ON;
+declare 
+type emp_type is table of employee_salary_history%rowtype index by employees.email%type;
+emp_rec emp_type;
+idx employees.email%type;
+begin 
+ --truncate table employee_salary_history;
+ for x in 100..109 loop
+    select e.*,'10-JUN-21' into emp_rec(x) from employees e where employee_id = x;
+    end loop;
+ idx := emp_rec.first;
+ 
+ while idx is not null loop
+    dbms_output.put_line('Record INDEX IS ' || idx || ' EMPLOYEE NAME: ' || emp_rec(idx).first_name || ' ' || emp_rec(idx).last_name);
+    insert into employee_salary_history values emp_rec(idx);
+    idx := emp_rec.next(idx);
+    end loop;
+    
+end;
+
+
+
 
 
   
