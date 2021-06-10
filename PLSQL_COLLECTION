@@ -1,0 +1,137 @@
+VARRAYS (Maximum size 2GBs)
+NESTED TABLES
+ASSOCIATIVE ARRAYS
+
+----------------------------------------------
+VARRAYS
+-----------------------------------------------
+
+VARRAY SYNTAX :- 
+set SERVEROUTPUT ON
+declare
+    type e_list is VARRAY(5) of VARCHAR2(50) ;
+    employees e_list;
+begin
+    employees := e_list('Alex', 'Deb', 'Ayan', 'Bob', 'Ratna');
+    for i in 1..employees.count() 
+        loop
+        dbms_output.put_line(employees(i));
+        end loop;
+end;
+
+--Another Way to do :- 
+for i in employees.first()..employees.last()
+
+-- Another Way to do:- 
+for i in 1..5 
+loop
+  if employees.exist(i) --checks whether the element exists or not.
+    then
+      dbms_output.put_line(employees(i));
+  end if;
+end loop;
+
+-- limit() will return size of the VARRAY.
+-- employees.limit() will return 5.
+
+------------------------------
+Adding Values to VARRAY
+------------------------------
+
+set SERVEROUTPUT ON
+declare
+type e_list is VARRAY(10) of VARCHAR2(50);
+-- initialize with empty constructor
+employees e_list := e_list();
+-- Index Variable
+idx number := 1;
+begin
+for i in 100..109 loop
+    employees.extend;  --Here we are telling varray collection to become extendable.
+    select first_name into employees(idx) from employees where employee_id = i;
+    idx := idx +1;
+    end loop;
+for i in 1..employees.count() loop
+    dbms_output.put_line(employees(i));
+    end loop;
+end;
+
+-------------------------------------------
+CREATING SCHEMA LEVEL TYPE FOR SHARED USAGE
+-------------------------------------------
+
+set SERVEROUTPUT ON
+-- We need to create this individually
+create type e_list is VARRAY(10) of VARCHAR2(50);
+/
+declare
+-- initialize constructor
+employees e_list := e_list();
+idx number := 1;
+begin
+for i in 100..109 loop
+    employees.extend;
+    select first_name into employees(idx) from employees where employee_id = i;
+    idx := idx +1;
+    end loop;
+for i in 1..employees.count() loop
+    dbms_output.put_line(employees(i));
+    end loop;
+end;
+
+--------------------------------------------
+NESTED TABLES - UNBOUNDED
+----------------------------------------------
+
+set SERVEROUTPUT ON
+declare
+type emp_type is TABLE of employees.first_name%TYPE;
+emp_list emp_type := emp_type();
+idx number := 1;
+begin
+    for i in 100..110 loop
+        emp_list.extend;
+        select first_name into emp_list(idx) from  employees where employee_id = i;
+        idx := idx + 1;
+        end loop;
+   emp_list.delete(3);
+    for i in 1..emp_list.count() loop
+        if emp_list.exists(i)then
+            dbms_output.put_line(emp_list(i));
+        end if;
+        end loop;
+end;
+
+-------------------------------------------------------
+ASSOCIATIVE ARRAYS / INDEX BY TABLES
+------------------------------------------------------
+
+-- In the below code EMAIL is used as KEY to fetch the data which is first_name
+
+set serveroutput on;
+declare 
+    type emp_type is table of employees.first_name%type index by varchar2(50);
+    emp_list emp_type;
+    idx employees.email%type; 
+    v_email employees.email%type;
+    v_first_name employees.first_name%type;
+begin
+    for x in 100..110 loop
+    select first_name,email into v_first_name,v_email from employees where employee_id = x;
+    emp_list(v_email) := v_first_name;
+    end loop;
+    
+    idx:= emp_list.first;
+    
+    while idx is not null loop
+    dbms_output.put_line(emp_list(idx));
+    idx := emp_list.next(idx);
+    end loop;
+    
+end;
+
+
+  
+
+
+
