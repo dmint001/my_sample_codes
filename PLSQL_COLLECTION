@@ -207,6 +207,27 @@ begin
     
 end;
 
+-----------------------------------------------------------------------
+
+  DECLARE
+  TYPE temp_table_type is TABLE of XXXX_TABLE_NAME%ROWTYPE INDEX BY PLS_INTEGER;
+  temp_table temp_table_type;
+  CURSOR c is SELECT * FROM XXXX_TABLE_NAME ORDER BY INVOICE_ID DESC;
+  
+  BEGIN
+  OPEN c;
+  LOOP
+  FETCH c BULK COLLECT INTO temp_table LIMIT 10000; 
+
+		FOR idx IN temp_table.FIRST..temp_table.LAST LOOP
+            INSERT INTO TEMP_LOG (DATA) VALUES ('idx : ' || idx || ' INVOICE_NUMBER ' || temp_table(idx).INVOICE_NUMBER);
+		    END LOOP;
+   EXIT WHEN c%NOTFOUND;
+  END LOOP;
+  CLOSE c;
+  END;
+  /
+
 
 
 
