@@ -11,3 +11,14 @@ def checkExist(item):
 
 list(map(checkExist,sentence))
 print(items)
+
+#just keep non repeating chars in a string
+
+sentence = "I am a string. I am very useful"
+sentence = list(sentence.replace(".",""))
+charlist = []
+for item in sentence:
+  if item not in charlist:
+      charlist.append(item)
+charlist.remove(" ")
+charlist
